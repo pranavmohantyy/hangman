@@ -1,0 +1,6 @@
+{
+  "animals": ["cat", "dog", "elephant", "giraffe", "tiger"],
+  "countries": ["canada", "brazil", "australia", "france", "india"],
+  "movies": ["inception", "matrix", "titanic", "avatar", "braveheart"],
+  "technology": ["python", "java", "javascript", "html", "css"]
+}
