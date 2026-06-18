@@ -8,36 +8,49 @@ class Hangman:
         self.max_failures = 6
         self.stages = [
             "\n\n\n\n\n\n\n",
-            "______\n|    |\n|    O\n|   /|\n|   / \\n|\n",
+            "______\n|    |\n|    O\n|   /|\n|   / \
+|\n",
             "______\n|    |\n|    O\n|   /|\n|   /\n|\n",
-            "______\n|    |\n|    O\n|    |\n|   / \\n|\n",
+            "______\n|    |\n|    O\n|    |\n|   / \
+|\n",
             "______\n|    |\n|    O\n|    |\n|   /\n|\n",
             "______\n|    |\n|    O\n|    |\n|\n|\n",
             "______\n|    |\n|\n|\n|\n|\n"
         ]
         self.hints_used = 0
-        self.scores = []
-        self.load_highscores()
+        self.difficulty = 'medium'
+        self.set_difficulty()
 
-    def load_highscores(self):
-        try:
-            with open('highscores.json') as f:
-                self.scores = json.load(f)
-        except FileNotFoundError:
-            self.scores = []
+    def set_difficulty(self):
+        if self.difficulty == 'easy':
+            self.max_failures = 8
+        elif self.difficulty == 'hard':
+            self.max_failures = 4
+        else:
+            self.max_failures = 6
 
-    def save_highscores(self):
-        with open('highscores.json', 'w') as f:
-            json.dump(sorted(self.scores)[:5], f)
+    def choose_category(self, category):
+        self.word = random.choice(self.word_bank[category])
+        self.guesses = []
+        self.failures = 0
+        self.hints_used = 0
 
-    def calculate_score(self, lives_remaining, word_length):
-        return (lives_remaining * 10) + (word_length * 5)
+    def get_display_word(self):
+        return ' '.join([letter if letter in self.guesses else '_' for letter in self.word])
 
-    def play(self):
-        # Game logic here
-        pass
+    def make_guess(self, letter):
+        if letter in self.guesses:
+            return False
+        self.guesses.append(letter)
+        if letter not in self.word:
+            self.failures += 1
+        return True
 
-    def end_game(self, word, lives_remaining):
-        score = self.calculate_score(lives_remaining, len(word))
-        self.scores.append(score)
-        self.save_highscores()
+    def get_stage(self):
+        return self.stages[self.failures]
+
+    def get_hint(self):
+        if self.hints_used < 1:
+            self.hints_used += 1
+            return random.choice([letter for letter in self.word if letter not in self.guesses])
+        return None
