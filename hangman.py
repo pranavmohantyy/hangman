@@ -16,18 +16,28 @@ class Hangman:
             "______\n|    |\n|\n|\n|\n|\n"
         ]
         self.hints_used = 0
+        self.scores = []
+        self.load_highscores()
 
-    def choose_word(self):
-        ...
+    def load_highscores(self):
+        try:
+            with open('highscores.json') as f:
+                self.scores = json.load(f)
+        except FileNotFoundError:
+            self.scores = []
 
-    def reveal_hint(self, word):
-        if self.hints_used < 1:
-            for letter in word:
-                if letter not in self.guessed_letters:
-                    self.hints_used += 1
-                    self.lives -= 1
-                    return letter
-        return None
+    def save_highscores(self):
+        with open('highscores.json', 'w') as f:
+            json.dump(sorted(self.scores)[:5], f)
 
-    def play_game(self):
-        ...
+    def calculate_score(self, lives_remaining, word_length):
+        return (lives_remaining * 10) + (word_length * 5)
+
+    def play(self):
+        # Game logic here
+        pass
+
+    def end_game(self, word, lives_remaining):
+        score = self.calculate_score(lives_remaining, len(word))
+        self.scores.append(score)
+        self.save_highscores()
