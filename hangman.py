@@ -13,55 +13,52 @@ class Hangman:
             f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|   / \\n|{Style.RESET_ALL}",
             f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|   /\n|{Style.RESET_ALL}",
             f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \\n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|    /\n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \n|{Style.RESET_ALL}"
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|    |\n|{Style.RESET_ALL}",
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \\n|{Style.RESET_ALL}",
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|{Style.RESET_ALL}",
         ]
-        self.score = 0
 
-    def choose_word(self, category):
-        return random.choice(self.word_bank[category])
-
-    def get_letter_frequency(self, word, guessed_letters):
-        remaining_letters = [letter for letter in word if letter not in guessed_letters]
-        if not remaining_letters:
-            return None
-        letter_count = Counter(remaining_letters)
-        return letter_count.most_common(1)[0][0]
-
-    def play(self):
-        category = input("Choose a category (animals, countries, movies, technology): ")
-        word = self.choose_word(category)
+    def start_game(self):
+        category = self.choose_category()
+        word = random.choice(self.word_bank[category])
         guessed_letters = []
         failures = 0
-
         while failures < self.max_failures:
-            print(self.stages[failures])
-            print('Current word:', ' '.join([letter if letter in guessed_letters else '_' for letter in word]))
-            print('Guessed letters:', ' '.join(guessed_letters))
-
-            if input('Do you want a hint for the most frequent letter? (y/n): ').lower() == 'y':
-                hint = self.get_letter_frequency(word, guessed_letters)
-                if hint:
-                    print(f'The most common remaining letter is: {hint}')
-                else:
-                    print('No remaining letters to hint.')
-
-            guess = input('Guess a letter: ').lower()
-            if guess in guessed_letters:
-                print('You already guessed that letter.')
-                continue
-            guessed_letters.append(guess)
-
-            if guess not in word:
+            print(self.display_hangman(failures))
+            print(self.display_word(word, guessed_letters))
+            guess = self.get_guess(guessed_letters)
+            if guess in word:
+                guessed_letters.append(guess)
+                if all(letter in guessed_letters for letter in word):
+                    print(f"You win! The word was '{word}'.")
+                    return
+            else:
                 failures += 1
+                guessed_letters.append(guess)
+        print(self.display_hangman(failures))
+        print(f"You lose! The word was '{word}'.")
 
-        if failures == self.max_failures:
-            print('You lost! The word was:', word)
-        else:
-            print('Congratulations! You guessed the word:', word)
-            self.score += 1
+    def choose_category(self):
+        categories = list(self.word_bank.keys())
+        print("Choose a category:")
+        for i, category in enumerate(categories):
+            print(f"{i + 1}. {category}")
+        choice = int(input()) - 1
+        return categories[choice]
+
+    def display_hangman(self, failures):
+        return self.stages[failures]
+
+    def display_word(self, word, guessed_letters):
+        return ' '.join(letter if letter in guessed_letters else '_' for letter in word)
+
+    def get_guess(self, guessed_letters):
+        while True:
+            guess = input("Guess a letter: ").lower()
+            if guess.isalpha() and len(guess) == 1 and guess not in guessed_letters:
+                return guess
+            print("Invalid guess. Try again.")
 
 if __name__ == '__main__':
     game = Hangman()
-    game.play()
+    game.start_game()
