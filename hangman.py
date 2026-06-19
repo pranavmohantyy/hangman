@@ -1,5 +1,6 @@
 import random
 import json
+from collections import Counter
 from colorama import Fore, Style
 
 class Hangman:
@@ -12,54 +13,54 @@ class Hangman:
             f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|   / \\n|{Style.RESET_ALL}",
             f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|   /\n|{Style.RESET_ALL}",
             f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \\n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|    / \\n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|    / \\n|{Style.RESET_ALL}",
-            f"{Fore.YELLOW}______\n|    |\n|    O\n|   /|\n|   / \\n|{Style.RESET_ALL}"
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|    /\n|{Style.RESET_ALL}",
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \n|{Style.RESET_ALL}",
+            f"{Fore.YELLOW}______\n|    |\n|    O\n|    |\n|   / \n|{Style.RESET_ALL}"
         ]
-        self.wins = 0
-        self.losses = 0
-        self.current_word = ''
-        self.hints = ''
+        self.score = 0
 
-    def choose_word(self):
-        category = input('Choose a category (animals, countries, movies, technology): ')
-        self.current_word = random.choice(self.word_bank.get(category, []))
-        self.hints = self.get_hint()
+    def choose_word(self, category):
+        return random.choice(self.word_bank[category])
 
-    def get_hint(self):
-        return f'The word is in the category: {category}'
+    def get_letter_frequency(self, word, guessed_letters):
+        remaining_letters = [letter for letter in word if letter not in guessed_letters]
+        if not remaining_letters:
+            return None
+        letter_count = Counter(remaining_letters)
+        return letter_count.most_common(1)[0][0]
 
     def play(self):
-        self.choose_word()
+        category = input("Choose a category (animals, countries, movies, technology): ")
+        word = self.choose_word(category)
+        guessed_letters = []
         failures = 0
-        guessed = []
+
         while failures < self.max_failures:
             print(self.stages[failures])
-            print(self.get_current_state(guessed))
+            print('Current word:', ' '.join([letter if letter in guessed_letters else '_' for letter in word]))
+            print('Guessed letters:', ' '.join(guessed_letters))
+
+            if input('Do you want a hint for the most frequent letter? (y/n): ').lower() == 'y':
+                hint = self.get_letter_frequency(word, guessed_letters)
+                if hint:
+                    print(f'The most common remaining letter is: {hint}')
+                else:
+                    print('No remaining letters to hint.')
+
             guess = input('Guess a letter: ').lower()
-            if guess in guessed:
+            if guess in guessed_letters:
                 print('You already guessed that letter.')
                 continue
-            guessed.append(guess)
-            if guess not in self.current_word:
+            guessed_letters.append(guess)
+
+            if guess not in word:
                 failures += 1
-            if all(letter in guessed for letter in self.current_word):
-                print('You win!')
-                self.wins += 1
-                break
+
+        if failures == self.max_failures:
+            print('You lost! The word was:', word)
         else:
-            print('You lose!')
-            self.losses += 1
-        self.play_again()
-
-    def get_current_state(self, guessed):
-        return ''.join([letter if letter in guessed else '_' for letter in self.current_word])
-
-    def play_again(self):
-        print(f'Session stats - Wins: {self.wins}, Losses: {self.losses}')
-        again = input('Play again? (y/n): ').lower()
-        if again == 'y':
-            self.play()
+            print('Congratulations! You guessed the word:', word)
+            self.score += 1
 
 if __name__ == '__main__':
     game = Hangman()
